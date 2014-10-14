@@ -17,10 +17,12 @@ UserSchema.methods.getSqueeks = function(username, count, cb){
 }
 
 UserSchema.methods.followUser = function(username, cb){
-    return this.find({username : {'$in' : [username, this.local.username]}}, function(err, users){
+    var self = this;
+    console.log(this);
+    return User.find({username : {'$in' : [username, this.username]}}, function(err, users){
         if(err) return cb(err);
         var toFollow = username;
-        var follower = this.local.username;
+        var follower = self.username;
         if(toFollow === users[0].username){
             toFollow = users[0]._id;
             follower = users[1]._id;
