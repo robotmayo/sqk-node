@@ -6,7 +6,7 @@ routes.index = function(request, reply){
     if(!request.auth.isAuthenticated){
         reply.view('index')
     }else{
-        return authIndex(request, reply);
+        return getTimeline(request, reply);
     }
 }
 
@@ -14,6 +14,13 @@ routes.followUser = function(request, reply){
     var u = new User({username : request.auth.credentials.username});
     u.followUser(request.params.username, function(err, user){
         reply.redirect('/profile/'+request.params.username);
+    })
+}
+
+function getTimeline(request, reply){
+    var u = new User();
+    u.getTimeline('admin', function(err, timeline){
+        reply.view('auth-index', {timeline : timeline});
     })
 }
 
@@ -40,9 +47,11 @@ routes.createSqueek = function(request, reply){
 
 function authIndex(request, reply){
     var u = new User();
-    u.getSqueeks(request.auth.credentials.username, 10, function(err, squeeks){
-        if(err) reply('ERROR');
-        reply.view('auth-index', {user : request.auth.credentials, squeeks : squeeks});
+    u.getUserSqueeks(request.auth.credentials.username, 10)
+    .then(function(squeeks, user){
+        reply("DERP");
+        console.log(arguments)
+        // /reply.view('auth-index', {user : request.auth.credentials, squeeks : squeeks});
     })
 }
 
@@ -86,7 +95,7 @@ routes.register = function(request, reply){
 routes.profile = function(request, reply){
     var username = request.params.user || request.auth.credentials.username;
     var u = new User();
-    u.getSqueeks(username, 10, function(err, squeeks){
+    u.getUserSqueeks(username, 10, function(err, squeeks){
         if(err) reply.view('/');
         reply.view('profile', {user : {username : username}, squeeks : squeeks});
     })

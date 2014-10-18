@@ -23,7 +23,8 @@
             <br>
             <div class="row">
                 <div class="col-lg-4 push-4">
-                    {{#each squeeks}}
+                    {{#each timeline}}
+                        <h3>{{userInfo.username}}</h3>
                         <span class="text-muted">{{createdOn}}</span>
                         <p>{{message}}</p>
                     {{/each}}
