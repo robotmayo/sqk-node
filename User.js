@@ -12,14 +12,16 @@ var UserSchema = mongoose.Schema({
 })
 
 UserSchema.methods.getTimeline = function(username, cb){
-    return User.findOne({username : username}, 'following')
+    return User.findOne({username : username}, 'following squeeks')
     .exec()
     .then(function(user){
         return User.find({_id : {'$in' : user.following}}, 'squeeks').exec()
         .then(function(squeekIds){
             var sids = _.pluck(squeekIds, 'squeeks');
-            sids = _.flatten(sids);
-            SqueekModel.find({"_id" : {"$in" : sids}})
+            var usersSqueeks = user.squeeks;
+            var derp = usersSqueeks.concat(sids);
+            sids = _.flatten(derp);
+            return SqueekModel.find({"_id" : {"$in" : sids}})
             .sort({'createdOn' : -1})
             .exec()
             .then(function(squeeks){
@@ -40,7 +42,10 @@ UserSchema.methods.getTimeline = function(username, cb){
                         msg.userInfo = user[0];
                         return msg;
                     })
-                    cb(null, timeline)
+                    var def = Q.defer();
+                    var p = def.promise;
+                    def.resolve(timeline);
+                    return p;
                 })
             })
         })
@@ -67,9 +72,9 @@ UserSchema.methods.getUserSqueeks = function(username, count, cb){
 
 UserSchema.methods.followUser = function(username, cb){
     var self = this;
-    console.log(this);
-    return User.find({username : {'$in' : [username, this.username]}}, function(err, users){
-        if(err) return cb(err);
+    return User.find({username : {'$in' : [username, this.username]}})
+    .exec()
+    .then(function(users){
         var toFollow = username;
         var follower = self.username;
         if(toFollow === users[0].username){
@@ -79,12 +84,48 @@ UserSchema.methods.followUser = function(username, cb){
             toFollow = users[1]._id;
             follower = users[0]._id;
         }
-        User.update({_id : toFollow}, {$push : {'followers' : follower}}, function(err, user){
-            if(err) cb(err);
-            User.update({_id : follower}, {$push : {'following' : toFollow}}, cb)
+        return User.update({_id : toFollow}, {$push : {'followers' : follower}})
+        .exec()
+        .then(function(user){
+            return User.update({_id : follower}, {$push : {'following' : toFollow}}).exec()
         })
     });
 }
+
+UserSchema.methods.getFollowers = function(userId){
+    return User.findOne({username : this.username}, 'followers').exec()
+    .then(function(user){
+        return User.find({_id : {'$in' : user.followers}}, 'username followers')
+        .exec()
+        .then(function(followers){
+            followers.forEach(function(f){
+                f.isFollowing = f.followers.some(function(id){
+                    return id.toString() == userId;
+                })
+            })
+            var p = Q.defer();
+            p.resolve(followers);
+            return p.promise;
+        })
+    })
+}
+
+UserSchema.methods.getFollowing = function(){
+    return User.findOne({username : this.username}, 'following').exec()
+    .then(function(user){
+        return User.find({_id : {'$in' : user.following}}, 'username')
+        .exec()
+        .then(function(users){
+            var p = Q.defer();
+            users.forEach(function(u){
+                u.isFollowing = true;
+            })
+            p.resolve(users);
+            return p.promise;
+        })
+    })
+}
+
 
 var User = mongoose.model('User', UserSchema, 'users');
 

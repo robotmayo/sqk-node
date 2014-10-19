@@ -48,6 +48,22 @@ server.route({
 })
 
 server.route({
+    method : 'GET',
+    path : '/following/{username?}',
+    config : {
+        handler : routes.getFollowing
+    }
+})
+
+server.route({
+    method : 'GET',
+    path : '/followers/{username?}',
+    config : {
+        handler : routes.getFollowers
+    }
+})
+
+server.route({
     method : 'POST',
     path : '/follow/{username}',
     config : {

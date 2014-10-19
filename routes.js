@@ -10,36 +10,70 @@ routes.index = function(request, reply){
     }
 }
 
+routes.getFollowers = function(request, reply){
+    var username = request.params.username;
+    if(!username){
+        username = request.auth.credentials.username;
+    }
+    var user = new User({username : username})
+    user.getFollowers(request.auth.credentials._id)
+    .then(function(followers){
+        console.log(followers)
+        reply.view('follow-list', {list : followers})
+    })
+    .then(null, function(err){
+        reply("ERR")
+        console.log(err)
+    })
+}
+
+routes.getFollowing = function(request, reply){
+    var username = request.params.username;
+    if(!username){
+        username = request.auth.credentials.username;
+    }
+    var user = new User({username : username})
+    user.getFollowing()
+    .then(function(following){
+        reply.view('follow-list', {list : following})
+    })
+    .then(null, function(err){
+        reply("ERR")
+        console.log(err)
+    })
+}
+
 routes.followUser = function(request, reply){
     var u = new User({username : request.auth.credentials.username});
-    u.followUser(request.params.username, function(err, user){
-        reply.redirect('/profile/'+request.params.username);
+    u.followUser(request.params.username)
+    .then(function(user){
+         reply.redirect('/profile/'+request.params.username);
     })
 }
 
 function getTimeline(request, reply){
     var u = new User();
-    u.getTimeline('admin', function(err, timeline){
+    u.getTimeline(request.auth.credentials.username)
+    .then(function(timeline){
         reply.view('auth-index', {timeline : timeline});
     })
+    /*u.getTimeline('admin', function(err, timeline){
+        reply.view('auth-index', {timeline : timeline});
+    })*/
 }
 
 routes.createSqueek = function(request, reply){
     if(!request.auth.isAuthenticated) reply('/');
     User.findOne({username : request.auth.credentials.username}, function(err, user){
-        console.log("FUCKING USER", user, request.auth.credentials)
         if(err) return reply.redirect('/');
         var squeek = new Squeek({
             userId : user._id,
             message : request.payload.squeek
         })
-        console.log("THE USER SQUEEK", user)
         squeek.save(function(err, s){
             if(err) return reply('/');
-            console.log("SAVING SQUEEK")
             User.update({_id : user._id}, {$push : {'squeeks' : s._id}}, function(err, user){
                 reply.redirect('/')
-                console.log("U:DATED USER")
             })
         })
     })
@@ -62,10 +96,8 @@ routes.login = function(request, reply){
 routes.authenticate = function(request, reply){
     User.findOne({username : request.payload.username}, function(err, user){
         if(err) return reply.redirect('/login');
-        console.log(user.password, request.payload.password)
         if(user.password === request.payload.password){
             request.auth.session.clear();
-            console.log("THE FUCKING USER LOGS IN ", user)
             request.auth.session.set(user);
             return reply.redirect('/');
         }else{
@@ -85,7 +117,6 @@ routes.register = function(request, reply){
     });
     account.save(function(err, user){
         if(err) console.error(err);
-        console.log("SAVING USER");
         request.auth.session.clear();
         request.auth.session.set(user);
         return reply.redirect('/');
@@ -95,8 +126,8 @@ routes.register = function(request, reply){
 routes.profile = function(request, reply){
     var username = request.params.user || request.auth.credentials.username;
     var u = new User();
-    u.getUserSqueeks(username, 10, function(err, squeeks){
-        if(err) reply.view('/');
+    u.getUserSqueeks(username, 10)
+    .then(function(squeeks, user){
         reply.view('profile', {user : {username : username}, squeeks : squeeks});
     })
 }
