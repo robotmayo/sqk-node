@@ -13,15 +13,15 @@
             {{>nav}}
             <h1>{{user.username}}'s Profile</h1>
             
-                
-                    <form action="/follow/{{user.username}}" method="POST">
-                        <button>Follow</button>
+                    {{#if followsUser}}
+                    <form action="/unfollow/{{user.username}}" method="POST">
+                        <button class="btn btn-warning"><span class="glyphicon glyphicon-remove"></span> Follow</button>
                     </form>
-
-                    
-                        <form action="/unfollow" method="POST">
-                            <button>Follow</button>
+                    {{else}}
+                        <form action="/follow/{{user.username}}" method="POST">
+                            <button class="btn btn-primary">Follow</button>
                         </form>
+                    {{/if}}
                     
             <div class="row">
                 <div class="col-lg-4 push-4">

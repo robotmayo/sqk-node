@@ -62,7 +62,7 @@ UserSchema.methods.getUserSqueeks = function(username, count, cb){
         .sort({'createdOn' : -1})
         .exec()
         .then(function(squeeks){
-            return Q(squeeks, user);
+            return Q({squeeks : squeeks, user : user});
         })
     })
     /*return User.findOne({username : username}, function(err, user){
@@ -89,6 +89,28 @@ UserSchema.methods.followUser = function(username, cb){
         .exec()
         .then(function(user){
             return User.update({_id : follower}, {$push : {'following' : toFollow}}).exec()
+        })
+    });
+}
+
+UserSchema.methods.unfollowUser = function(username, cb){
+    var self = this;
+    return User.find({username : {'$in' : [username, this.username]}})
+    .exec()
+    .then(function(users){
+        var unfollowing = username; // This is the one losing a follower
+        var unfollower = self.username; // This is the one who is doing the unfollowing
+        if(unfollowing === users[0].username){
+            unfollowing = users[0]._id;
+            unfollower = users[1]._id;
+        }else{
+            unfollowing = users[1]._id;
+            unfollower = users[0]._id;
+        }
+        return User.update({_id : unfollowing}, {$pull : {'followers' : unfollower}})
+        .exec()
+        .then(function(user){
+            return User.update({_id : unfollower}, {$pull : {'following' : unfollowing}}).exec()
         })
     });
 }
@@ -124,6 +146,19 @@ UserSchema.methods.getFollowing = function(){
             p.resolve(users);
             return p.promise;
         })
+    })
+}
+
+UserSchema.methods.followsUser = function(id){
+    return User.findOne({username : this.username})
+    .exec()
+    .then(function(user){
+        var follows = _.find(user.followers, function(follower){
+            return follower.toString() == id;
+        });
+        if(follows) follows = true;
+        else follows = false;
+        return Q(follows)
     })
 }
 

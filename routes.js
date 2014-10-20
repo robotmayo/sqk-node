@@ -51,15 +51,20 @@ routes.followUser = function(request, reply){
     })
 }
 
+routes.unfollowUser = function(request, reply){
+    var u = new User({username : request.auth.credentials.username});
+    u.unfollowUser(request.params.username)
+    .then(function(user){
+         reply.redirect('/profile/'+request.params.username);
+    })
+}
+
 function getTimeline(request, reply){
     var u = new User();
     u.getTimeline(request.auth.credentials.username)
     .then(function(data){
         reply.view('auth-index', {timeline : data.timeline, user : data.user});
     })
-    /*u.getTimeline('admin', function(err, timeline){
-        reply.view('auth-index', {timeline : timeline});
-    })*/
 }
 
 routes.createSqueek = function(request, reply){
@@ -82,7 +87,7 @@ routes.createSqueek = function(request, reply){
 function authIndex(request, reply){
     var u = new User();
     u.getUserSqueeks(request.auth.credentials.username, 10)
-    .then(function(squeeks, user){
+    .then(function(data){
         reply("DERP");
         console.log(arguments)
         // /reply.view('auth-index', {user : request.auth.credentials, squeeks : squeeks});
@@ -127,8 +132,28 @@ routes.profile = function(request, reply){
     var username = request.params.user || request.auth.credentials.username;
     var u = new User();
     u.getUserSqueeks(username, 10)
-    .then(function(squeeks, user){
-        reply.view('profile', {user : {username : username}, squeeks : squeeks});
+    .then(function(data){
+        var u = new User({username : data.user.username});
+        u.followsUser(request.auth.credentials._id)
+        .then(function(follows){
+            console.log(follows);
+            reply.view('profile', {user : data.user, squeeks : data.squeeks, followsUser : follows});
+        })
+        .then(null, function(err){
+            reply("SOMETHIGN WEHNT WRONG")
+        })
+    })
+    .then(null, function(err){
+        reply("wtf")
+    })
+}
+
+routes.test = function(request, reply){
+    var u = new User({username : "robotmayo"});
+    u.followsUser(request.auth.credentials._id)
+    .then(function(follows){
+        reply("DERP");
+        console.log(follows)
     })
 }
 

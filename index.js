@@ -72,6 +72,14 @@ server.route({
 })
 
 server.route({
+    method : 'POST',
+    path : '/unfollow/{username}',
+    config : {
+        handler : routes.unfollowUser
+    }
+})
+
+server.route({
     method : ['POST', 'GET'],
     path : '/logout',
     config : {
@@ -140,6 +148,15 @@ server.route({
         handler : routes.createSqueek
     }
 })
+
+server.route({
+    method : 'GET',
+    path : '/test',
+    config : {
+        handler : routes.test
+    }
+})
+
 
 var defaultContext = {
     isLoggedIn : false
