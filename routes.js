@@ -54,8 +54,8 @@ routes.followUser = function(request, reply){
 function getTimeline(request, reply){
     var u = new User();
     u.getTimeline(request.auth.credentials.username)
-    .then(function(timeline){
-        reply.view('auth-index', {timeline : timeline});
+    .then(function(data){
+        reply.view('auth-index', {timeline : data.timeline, user : data.user});
     })
     /*u.getTimeline('admin', function(err, timeline){
         reply.view('auth-index', {timeline : timeline});

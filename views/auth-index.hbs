@@ -11,23 +11,24 @@
     <body>
         <div class="container">
             {{>nav}}
-            <form action="/squeek" method="POST">
-                <div class="row">
-                    <div class="col-lg-3">
+            <div class="row">
+                <div class="profile-header col-lg-4">
+                    <span class="username">{{user.username}}</span>
+                    <form action="/squeek" method="POST">
                         <textarea name="squeek" id="squeek" cols="10" rows="2" class="form-control"></textarea>
                         <br>
                         <button class="btn btn-primary">Send</button>
-                    </div>
+                    </form>
                 </div>
-            </form>
-            <br>
-            <div class="row">
-                <div class="col-lg-4 push-4">
-                    {{#each timeline}}
-                        <h3>{{userInfo.username}}</h3>
-                        <span class="text-muted">{{createdOn}}</span>
-                        <p>{{message}}</p>
-                    {{/each}}
+                <br>
+                <div class="row">
+                    <div class="col-lg-4 push-4">
+                        {{#each timeline}}
+                            <a href="/profile/{{userInfo.username}}" class="username">{{userInfo.username}}</a>
+                            <span class="time">{{createdOn}}</span>
+                            <p>{{message}}</p>
+                        {{/each}}
+                    </div>
                 </div>
             </div>
         </div>

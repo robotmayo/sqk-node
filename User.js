@@ -12,9 +12,10 @@ var UserSchema = mongoose.Schema({
 })
 
 UserSchema.methods.getTimeline = function(username, cb){
-    return User.findOne({username : username}, 'following squeeks')
+    return User.findOne({username : username}, 'following squeeks username')
     .exec()
     .then(function(user){
+        var mainUser = user;
         return User.find({_id : {'$in' : user.following}}, 'squeeks').exec()
         .then(function(squeekIds){
             var sids = _.pluck(squeekIds, 'squeeks');
@@ -44,7 +45,7 @@ UserSchema.methods.getTimeline = function(username, cb){
                     })
                     var def = Q.defer();
                     var p = def.promise;
-                    def.resolve(timeline);
+                    def.resolve({timeline : timeline, user : mainUser});
                     return p;
                 })
             })
