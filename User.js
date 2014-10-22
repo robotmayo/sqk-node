@@ -73,6 +73,11 @@ UserSchema.methods.getUserSqueeks = function(username, count, cb){
 
 UserSchema.methods.followUser = function(username, cb){
     var self = this;
+    if(username == this.username){
+        var def = Q.defer();
+        def.resolve('');
+        return def.promise;
+    }
     return User.find({username : {'$in' : [username, this.username]}})
     .exec()
     .then(function(users){
@@ -94,6 +99,11 @@ UserSchema.methods.followUser = function(username, cb){
 }
 
 UserSchema.methods.unfollowUser = function(username, cb){
+    if(username == this.username){
+        var def = Q.defer();
+        def.resolve('');
+        return def.promise;
+    }
     var self = this;
     return User.find({username : {'$in' : [username, this.username]}})
     .exec()

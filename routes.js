@@ -3,6 +3,10 @@ var User = require('./User');
 var Squeek = require('./squeek');
 var Hoek = require('hoek');
 var bcrypt = require('bcrypt');
+var Q = require('q');
+var hash = Q.nfbind(bcrypt.hash);
+var genSalt = Q.nfbind(bcrypt.genSalt);
+var compare = Q.nfbind(bcrypt.compare);
 
 routes.index = function(request, reply){
     if(!request.auth.isAuthenticated){
@@ -62,10 +66,15 @@ routes.unfollowUser = function(request, reply){
 }
 
 function getTimeline(request, reply){
+    console.log("TIMELINED", request.auth)
     var u = new User();
     u.getTimeline(request.auth.credentials.username)
     .then(function(data){
+        console.log("TIMELINE DATA")
         reply.view('auth-index', {timeline : data.timeline, user : data.user});
+    })
+    .then(null, function(err){
+        console.error(err);
     })
 }
 
@@ -101,15 +110,22 @@ routes.login = function(request, reply){
 }
 
 routes.authenticate = function(request, reply){
-    User.findOne({username : request.payload.username}, function(err, user){
-        if(err) return reply.redirect('/login');
-        if(bcrypt.compareSync(request.payload.password, user.password)){
+    User.findOne({username : request.payload.username})
+    .exec()
+    .then(function(user){
+        return compare(request.payload.password, user.password);
+    })
+    .then(function(result){
+        if(result){
             request.auth.session.clear();
             request.auth.session.set(user);
             return reply.redirect('/');
         }else{
             return reply.redirect('/login');
         }
+    })
+    .then(null, function(err){
+        console.error(err);
     })
 }
 
@@ -118,15 +134,26 @@ routes.register = function(request, reply){
     if(!request.payload.username && !request.payload.password){
         return reply.redirect('/register')
     }
-    var account = new User({
-        username : request.payload.username,
-        password : bcrypt.hashSync(request.payload.password, bcrypt.genSaltSync(), null)
-    });
-    account.save(function(err, user){
-        if(err) console.error(err);
+    genSalt(10)
+    .then(function(salt){
+        return hash(request.payload.password, salt);
+    })
+    .then(function(hashedPassword){
+        var account = new User({
+            username : request.payload.username,
+            password : hashedPassword
+        });
+        var save = Q.ninvoke(account, "save");
+        return save;
+    })
+    .then(function(user){
+        console.log("REDIRECTED", user)
         request.auth.session.clear();
-        request.auth.session.set(user);
+        request.auth.session.set(user[0]);
         return reply.redirect('/');
+    })
+    .then(null, function(err){
+        console.error(err);
     })
 }
 
