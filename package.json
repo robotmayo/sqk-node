@@ -9,6 +9,7 @@
   "author": "robotmayo",
   "license": "MIT",
   "dependencies": {
+    "bcrypt": "^0.8.0",
     "handlebars": "^2.0.0",
     "hapi": "^6.11.1",
     "hapi-auth-cookie": "^1.3.2",

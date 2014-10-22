@@ -2,6 +2,8 @@ var routes = {};
 var User = require('./User');
 var Squeek = require('./squeek');
 var Hoek = require('hoek');
+var bcrypt = require('bcrypt');
+
 routes.index = function(request, reply){
     if(!request.auth.isAuthenticated){
         reply.view('index')
@@ -101,7 +103,7 @@ routes.login = function(request, reply){
 routes.authenticate = function(request, reply){
     User.findOne({username : request.payload.username}, function(err, user){
         if(err) return reply.redirect('/login');
-        if(user.password === request.payload.password){
+        if(bcrypt.compareSync(request.payload.password, user.password)){
             request.auth.session.clear();
             request.auth.session.set(user);
             return reply.redirect('/');
@@ -118,7 +120,7 @@ routes.register = function(request, reply){
     }
     var account = new User({
         username : request.payload.username,
-        password : request.payload.password
+        password : bcrypt.hashSync(request.payload.password, bcrypt.genSaltSync(), null)
     });
     account.save(function(err, user){
         if(err) console.error(err);
