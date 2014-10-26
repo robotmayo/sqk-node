@@ -151,9 +151,9 @@ server.route({
 
 server.route({
     method : 'GET',
-    path : '/test',
+    path : '/tag/{tag}',
     config : {
-        handler : routes.test
+        handler : routes.showTags
     }
 })
 
