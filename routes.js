@@ -1,5 +1,5 @@
 var routes = {};
-var User = require('./User');
+var User = require('./user');
 var HashTag = require('./hashtag');
 var Squeek = require('./squeek');
 var Hoek = require('hoek');
