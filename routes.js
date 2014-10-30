@@ -90,17 +90,17 @@ routes.createSqueek = function(request, reply){
             return User.update({_id : user._id}, {$push : {'squeeks' : s._id}})
             .exec()
             .then(function(user){
-                reply.redirect('/');
+                reply({success : true});
             })
             .then(null, function(err){
                 console.error("Couldnt save user", err);
-                reply.redirect('/');
+                reply({error : error});
             })
         })
     })
     .then(null, function(err){
         console.error(err);
-        reply.redirect('/');
+        reply({error : 'Some error'});
     })
 }
 

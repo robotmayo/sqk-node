@@ -98,6 +98,10 @@ UserSchema.methods.followUser = function(username, cb){
     });
 }
 
+UserSchema.methods.addFollower = function(userId, followerId){
+    User.update({_id : userId}, {$addToSet : {'followers' : followerId}})
+}
+
 UserSchema.methods.unfollowUser = function(username, cb){
     if(username == this.username){
         var def = Q.defer();

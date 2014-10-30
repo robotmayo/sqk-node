@@ -49,6 +49,17 @@ server.route({
 
 server.route({
     method : 'GET',
+    path: '/public/{param*}',
+    handler : {
+        directory : {
+            path : 'public',
+            listing : true
+        }
+    }
+})
+
+server.route({
+    method : 'GET',
     path : '/following/{username?}',
     config : {
         handler : routes.getFollowing
@@ -143,7 +154,7 @@ server.route({
 
 server.route({
     method : 'POST',
-    path : '/squeek',
+    path : '/api/sendSqueek',
     config : {
         handler : routes.createSqueek
     }

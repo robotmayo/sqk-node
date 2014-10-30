@@ -14,10 +14,10 @@
             <div class="row">
                 <div class="profile-header col-lg-4">
                     <span class="username">{{user.username}}</span>
-                    <form action="/squeek" method="POST">
-                        <textarea name="squeek" id="squeek" cols="10" rows="2" class="form-control"></textarea>
+                    <form >
+                        <textarea name="squeek" id="squeek-textarea" cols="10" rows="2" class="form-control"></textarea>
                         <br>
-                        <button class="btn btn-primary">Send</button>
+                        <button class="btn btn-primary" id="send-squeek-btn">Send</button>
                     </form>
                 </div>
                 <br>
@@ -32,6 +32,7 @@
                 </div>
             </div>
         </div>
+        <script src="public/js/main.js"></script>
         <script>
             /*(function(b,o,i,l,e,r){b.GoogleAnalyticsObject=l;b[l]||(b[l]=
             function(){(b[l].q=b[l].q||[]).push(arguments)});b[l].l=+new Date;
