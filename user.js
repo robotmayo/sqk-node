@@ -81,25 +81,30 @@ UserSchema.methods.followUser = function(username, cb){
     return User.find({username : {'$in' : [username, this.username]}})
     .exec()
     .then(function(users){
-        var toFollow = username;
-        var follower = self.username;
-        if(toFollow === users[0].username){
-            toFollow = users[0]._id;
-            follower = users[1]._id;
-        }else{
-            toFollow = users[1]._id;
-            follower = users[0]._id;
-        }
-        return User.update({_id : toFollow}, {$push : {'followers' : follower}})
-        .exec()
-        .then(function(user){
-            return User.update({_id : follower}, {$push : {'following' : toFollow}}).exec()
-        })
+        if(users.length !== 2) throw new Error("Couldn't find users")
+        var userToBeFollowed = users[0].username == username ? users[0] : users[1];
+        var userThatDoesTheFollowing = userToBeFollowed == users[0] ? users[1] : users[0];
+        return self.addToFollowers(userThatDoesTheFollowing._id, userToBeFollowed._id)
+        .then(function(){
+            return self.addToFollowing(userToBeFollowed._id ,userThatDoesTheFollowing._id)
+        });
     });
 }
 
-UserSchema.methods.addFollower = function(userId, followerId){
-    User.update({_id : userId}, {$addToSet : {'followers' : followerId}})
+UserSchema.methods.addToFollowers = function(usersId, followerId){
+    return User.update({_id : usersId}, {$addToSet : {'followers' : followerId}}).exec();
+}
+
+UserSchema.methods.addToFollowing = function(usersId, followingId){
+    return User.update({_id : usersId}, {$addToSet : {'following' : followerId}}).exec();
+}
+
+UserSchema.methods.removeFromFollowers = function(usersId, followerId){
+    return User.update({_id : usersId}, {$pull : {'followers' : followerId}}).exec();
+}
+
+UserSchema.methods.removeFromFollowing = function(usersId, followingId){
+    return User.update({_id : usersId}, {$pull : {'following' : followerId}}).exec();
 }
 
 UserSchema.methods.unfollowUser = function(username, cb){
@@ -112,19 +117,11 @@ UserSchema.methods.unfollowUser = function(username, cb){
     return User.find({username : {'$in' : [username, this.username]}})
     .exec()
     .then(function(users){
-        var unfollowing = username; // This is the one losing a follower
-        var unfollower = self.username; // This is the one who is doing the unfollowing
-        if(unfollowing === users[0].username){
-            unfollowing = users[0]._id;
-            unfollower = users[1]._id;
-        }else{
-            unfollowing = users[1]._id;
-            unfollower = users[0]._id;
-        }
-        return User.update({_id : unfollowing}, {$pull : {'followers' : unfollower}})
-        .exec()
-        .then(function(user){
-            return User.update({_id : unfollower}, {$pull : {'following' : unfollowing}}).exec()
+        var userLosingAFollower = users[0].username == username ? users[0] : users[1];
+        var userDoingUnfollowing = userLosingAFollower == users[0] ? users[1] : users[0];
+        return self.removeFromFollowers(userLosingAFollower._id, userDoingUnfollowing._id)
+        .then(function(){
+            return self.removeFromFollowing(userDoingUnfollowing._id, userLosingAFollower._id);
         })
     });
 }
