@@ -1,6 +1,6 @@
 var mongoose = require('mongoose');
 var SqueekModel = require('./squeek');
-var UserModel = require('./User');
+var UserModel = require('./user');
 var _ = require('lodash');
 var HashtagSchema = mongoose.Schema({
     tag : {type : String, required : true},
