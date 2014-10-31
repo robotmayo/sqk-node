@@ -84,9 +84,10 @@ UserSchema.methods.followUser = function(username, cb){
         if(users.length !== 2) throw new Error("Couldn't find users")
         var userToBeFollowed = users[0].username == username ? users[0] : users[1];
         var userThatDoesTheFollowing = userToBeFollowed == users[0] ? users[1] : users[0];
-        return self.addToFollowers(userThatDoesTheFollowing._id, userToBeFollowed._id)
+
+        return self.addToFollowers(userToBeFollowed._id, userThatDoesTheFollowing._id)
         .then(function(){
-            return self.addToFollowing(userToBeFollowed._id ,userThatDoesTheFollowing._id)
+            return self.addToFollowing(userThatDoesTheFollowing._id, userToBeFollowed._id)
         });
     });
 }
@@ -96,7 +97,7 @@ UserSchema.methods.addToFollowers = function(usersId, followerId){
 }
 
 UserSchema.methods.addToFollowing = function(usersId, followingId){
-    return User.update({_id : usersId}, {$addToSet : {'following' : followerId}}).exec();
+    return User.update({_id : usersId}, {$addToSet : {'following' : followingId}}).exec();
 }
 
 UserSchema.methods.removeFromFollowers = function(usersId, followerId){
@@ -104,7 +105,7 @@ UserSchema.methods.removeFromFollowers = function(usersId, followerId){
 }
 
 UserSchema.methods.removeFromFollowing = function(usersId, followingId){
-    return User.update({_id : usersId}, {$pull : {'following' : followerId}}).exec();
+    return User.update({_id : usersId}, {$pull : {'following' : followingId}}).exec();
 }
 
 UserSchema.methods.unfollowUser = function(username, cb){

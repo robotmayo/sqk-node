@@ -54,6 +54,10 @@ routes.followUser = function(request, reply){
     .then(function(user){
          reply.redirect('/profile/'+request.params.username);
     })
+    .then(null, function(err){
+        console.error(err);
+        reply.redirect('/profile')
+    })
 }
 
 routes.unfollowUser = function(request, reply){
